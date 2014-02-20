@@ -1,45 +1,32 @@
 #
-# Cookbook Name:: robertlemke-webserver
+# Cookbook Name:: techdivision-websever
 # Recipe:: default
+# Author:: Robert Lemke <r.lemke@techdivision.com>
 #
-# Copyright 2013, Robert Lemke
+# Copyright (c) 2014 Robert Lemke, TechDivision GmbH
 #
-# All rights reserved - Do Not Redistribute
+# Licensed under the MIT License (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-
-include_recipe 'robertlemke-baseserver'
-
-#
-# MYSQL
-#
-
-# Note that ruby-dev must be installed on the base box already in order to compile
-# mysql::ruby which in turn is necessary for database::mysql
-
-include_recipe 'mysql::client'
-include_recipe 'mysql::server'
-include_recipe 'database::mysql'
-
-node.default['mysql']['tunable']['collation-server'] = "utf8_unicode_ci"
-node.default['mysql']['tunable']['max_connections'] = "150"
-node.default['mysql']['delete_anonymous_users'] = true
-node.default['mysql']['delete_passwordless_users'] = true
-
-#
-# APACHE
+#     http://opensource.org/licenses/MIT
 #
 
-include_recipe 'apache2'
-include_recipe 'apache2::logrotate'
-include_recipe 'apache2::mod_rewrite'
+#
+# NGINX
+#
 
-node.default['apache']['contact'] = "hostmaster@robertlemke.net"
+include_recipe 'nginx'
 
-file "/var/www/index.html" do
-  action :delete
+directory "/var/www/nginx-default" do
+  action :create
+  owner "root"
+  group "www-data"
+  mode 00755
+  recursive true
 end
 
-file "/var/www/index.php" do
+file "/var/www/nginx-default/index.php" do
   content "<?php echo(gethostname()); ?>"
   owner "root"
   group "www-data"
@@ -47,11 +34,34 @@ file "/var/www/index.php" do
 end
 
 #
-# PHP
+# PHP-FPM:
 #
 
-include_recipe 'php'
-include_recipe 'apache2::mod_php5'
+include_recipe "php"
+include_recipe "php-fpm"
+
+template "default-site.erb" do
+  path "/etc/nginx/sites-available/default-custom"
+  source "default-site.erb"
+  owner "root"
+  group "root"
+  mode "0644"
+end
+
+nginx_site "default-custom" do
+  enable true
+end
+
+#
+# PHP configuration and additional modules:
+#
+
+directory "/etc/php5/conf.d" do
+  action :create
+  owner "root"
+  group "www-data"
+  mode 00755
+end
 
 template "100-general-additions.ini" do
   path "/etc/php5/conf.d/100-general-additions.ini"
@@ -59,10 +69,20 @@ template "100-general-additions.ini" do
   owner "root"
   group "root"
   mode "0644"
-  notifies :restart, resources(:service => "apache2")
+  notifies :restart, resources(:service => "php-fpm")
 end
 
+link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
+  to "/etc/php5/conf.d/100-general-additions.ini"
+end
+
+link "/etc/php5/cli/conf.d/100-general-additions.ini" do
+  to "/etc/php5/conf.d/100-general-additions.ini"
+end
+
+# FIXME: igbinary is not included yet!
 php_pear "igbinary" do
+  channel "pecl.php.net"
   action :install
 end
 
@@ -74,28 +94,26 @@ package 'php5-gd' do
   action :install
 end
 
-package 'php5-mysql' do
+package 'php5-mysqlnd' do
   action :install
 end
 
-package 'php-apc' do
-  action :install
-end
-
-template "100-apc-additions.ini" do
-  path "/etc/php5/conf.d/100-apc-additions.ini"
-  source "100-apc-additions.ini"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, resources(:service => "apache2")
-end
-
 #
-# COMPOSER
+# TYPO3 Neos websites
 #
 
-composer "/usr/local/bin" do
-  owner "root"
-  action [:install, :update]
+sites = search(:sites, "host:#{node.fqdn} AND delete:false")
+
+sites.each do |site|
+  techdivision_typo3flow_app site["host"] do
+    database_name site["databaseName"]
+    database_username site["databaseUsername"]
+    database_password site["databasePassword"]
+    rewrite_rules []
+  end
+
+  nginx_site site["host"] do
+    enable true
+  end
+
 end

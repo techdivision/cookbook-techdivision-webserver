@@ -1,0 +1,23 @@
+server {
+	listen 80;
+	server_name <%= node['hostname'] %>;
+
+	root /var/www/nginx-default;
+	access_log  <%= node['nginx']['log_dir'] %>/access.log;
+
+	location / {
+		index index.php index.html;
+	}
+
+	location ~ \.php$ {
+		fastcgi_pass 127.0.0.1:9000;
+
+		include fastcgi_params;
+		fastcgi_index index.php;
+		try_files $uri =404;
+
+		fastcgi_param SCRIPT_FILENAME $document_root/$fastcgi_script_name;
+		fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+		fastcgi_param PATH_INFO $fastcgi_path_info;
+	}
+}

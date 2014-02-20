@@ -1,15 +1,13 @@
-name             'robertlemke-webserver'
-maintainer       'Robert Lemke'
-maintainer_email 'rl@robertlemke.com'
-license          'All rights reserved'
-description      'Installs/Configures robertlemke-webserver'
-long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version          '0.1.0'
+name             "techdivision-webserver"
+maintainer       "Robert Lemke"
+maintainer_email "r.lemke@techdivision.com"
+license          "MIT License"
+description      "Installs/Configures techdivision-webserver"
+long_description IO.read(File.join(File.dirname(__FILE__), "README.md"))
+version          "0.3.0"
 
-depends 'robertlemke-baseserver'
-depends 'php'
-depends 'apache2'
-depends 'composer'
-depends 'database'
-depends 'git'
-depends 'logrotate'
+depends "techdivision-base"
+depends "nginx"
+depends "php"
+depends "php-fpm"
+depends "techdivision-typo3flow"
