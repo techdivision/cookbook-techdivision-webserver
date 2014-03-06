@@ -99,6 +99,14 @@ package 'php5-mysqlnd' do
 end
 
 #
+# RSYNC for Surf deployments
+#
+
+package 'rsync' do
+  action :install
+end
+
+#
 # TYPO3 Neos websites
 #
 
