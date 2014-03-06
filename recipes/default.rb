@@ -72,13 +72,13 @@ template "100-general-additions.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
-  to "/etc/php5/conf.d/100-general-additions.ini"
-end
+#link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
+#  to "/etc/php5/conf.d/100-general-additions.ini"
+#end
 
-link "/etc/php5/cli/conf.d/100-general-additions.ini" do
-  to "/etc/php5/conf.d/100-general-additions.ini"
-end
+#link "/etc/php5/cli/conf.d/100-general-additions.ini" do
+#  to "/etc/php5/conf.d/100-general-additions.ini"
+#end
 
 # FIXME: igbinary is not included yet!
 php_pear "igbinary" do
