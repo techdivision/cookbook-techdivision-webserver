@@ -133,34 +133,6 @@ template "100-general-additions.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-php_pear "igbinary" do
-  channel "pecl.php.net"
-  action :install
-end
-
-package "libyaml-dev" do
-  action :install
-end
-
-php_pear "yaml" do
-  channel "pecl.php.net"
-  action :install
-end
-
-template "yaml.ini" do
-  path "/etc/php5/mods-available/yaml.ini"
-  source "yaml.ini"
-  owner "root"
-  group "root"
-  mode "0644"
-  notifies :restart, resources(:service => "php-fpm")
-end
-
-link "/etc/php5/common/conf.d/20-yaml.ini" do
-  action :create
-  to "../../mods-available/yaml.ini"
-end
-
 package "php5-gd" do
   action :install
 end
@@ -179,6 +151,36 @@ end
 
 package "php5-curl" do
   action :install
+end
+
+#
+# PECL extensions
+#
+
+execute "pecl install igbinary" do
+  not_if "test -e `pecl config-get ext_dir`/igbinary.so"
+end
+
+#package "libyaml-dev" do
+#  action :install
+#end
+
+execute "pecl install yaml" do
+  not_if "test -e `pecl config-get ext_dir`/yaml.so"
+end
+
+template "yaml.ini" do
+  path "/etc/php5/mods-available/yaml.ini"
+  source "yaml.ini"
+  owner "root"
+  group "root"
+  mode "0644"
+  notifies :restart, resources(:service => "php-fpm")
+end
+
+link "/etc/php5/common/conf.d/20-yaml.ini" do
+  action :create
+  to "../../mods-available/yaml.ini"
 end
 
 #
