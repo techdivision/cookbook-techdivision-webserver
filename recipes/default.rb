@@ -80,13 +80,14 @@ end
 #  to "/etc/php5/conf.d/100-general-additions.ini"
 #end
 
-# FIXME: igbinary is not included yet!
+# FIXME: igbinary is installed, but not included in the active extensions yet (doesn't appear in php -i)!
 php_pear "igbinary" do
   channel "pecl.php.net"
   action :install
 end
 
-package 'php5-curl' do
+php_pear "yaml" do
+  channel "pecl.php.net"
   action :install
 end
 
@@ -95,6 +96,18 @@ package 'php5-gd' do
 end
 
 package 'php5-mysqlnd' do
+  action :install
+end
+
+package 'php5-sqlite' do
+  action :install
+end
+
+package 'php5-readline' do
+  action :install
+end
+
+package 'php5-curl' do
   action :install
 end
 
