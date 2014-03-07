@@ -56,11 +56,17 @@ end
 # PHP configuration directory structure
 #
 
-directory "/etc/php5/conf.d" do
+#
+# Create a directory "common" instead of using just "/etc/php5/conf.d" because all modules which are installed
+# by DPKG will create symlinks to their module init files with "../../mods-available". That's because they expect
+# to be in, for example, /etc/php5/cli/conf.d/ and not in /etc/php5/conf.d
+#
+directory "/etc/php5/common/conf.d" do
   action :create
   owner "root"
   group "www-data"
   mode 00755
+  recursive true
 end
 
 directory "/etc/php5/fpm" do
@@ -85,7 +91,7 @@ end
 
 link "/etc/php5/fpm/conf.d" do
   action :create
-  to "../conf.d"
+  to "../common/conf.d"
 end
 
 directory "/etc/php5/cli/conf.d" do
@@ -96,7 +102,7 @@ end
 
 link "/etc/php5/cli/conf.d" do
   action :create
-  to "../conf.d"
+  to "../common/conf.d"
 end
 
 #
@@ -104,7 +110,7 @@ end
 #
 
 template "100-general-additions.ini" do
-  path "/etc/php5/conf.d/100-general-additions.ini"
+  path "/etc/php5/conf.d/common/100-general-additions.ini"
   source "100-general-additions.ini"
   owner "root"
   group "root"
@@ -127,7 +133,7 @@ php_pear "yaml" do
 end
 
 template "yaml.ini" do
-  path "/etc/php5/conf.d/yaml.ini"
+  path "/etc/php5/common/conf.d/yaml.ini"
   source "yaml.ini"
   owner "root"
   group "root"
@@ -145,18 +151,6 @@ end
 
 package "php5-sqlite" do
   action :install
-end
-
-# Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
-link "/etc/php5/conf.d/20-pdo_sqlite.ini" do
-  to "../mods-available/pdo_sqlite.ini"
-  action :create
-end
-
-# Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
-link "/etc/php5/conf.d/20-sqlite3.ini" do
-  to "../mods-available/20-sqlite3.ini"
-  action :create
 end
 
 package "php5-readline" do
