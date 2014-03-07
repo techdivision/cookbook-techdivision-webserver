@@ -148,15 +148,13 @@ package "php5-sqlite" do
 end
 
 # Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
-link "20-pdo_sqlite.ini" do
-  path "20-pdo_sqlite.ini"
+link "/etc/php5/conf.d/20-pdo_sqlite.ini" do
   to "../mods-available/pdo_sqlite.ini"
   action :create
 end
 
 # Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
-link "20-sqlite3.ini" do
-  path "20-sqlite3.ini"
+link "/etc/php5/conf.d/20-sqlite3.ini" do
   to "../mods-available/20-sqlite3.ini"
   action :create
 end
