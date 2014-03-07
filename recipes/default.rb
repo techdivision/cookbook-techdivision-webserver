@@ -106,6 +106,21 @@ link "/etc/php5/cli/conf.d" do
 end
 
 #
+# Re-create symlinks which usually would be created in ...fpm/conf.d and ...cli/conf.d
+#
+
+link "/etc/php5/common/conf.d/opcache.ini" do
+  action :create
+  to "../../mods-available/opcache.ini"
+end
+
+link "/etc/php5/common/conf.d/pdo.ini" do
+  action :create
+  to "../../mods-available/pdo.ini"
+end
+
+
+#
 # PHP configuration and additional modules:
 #
 
@@ -141,7 +156,7 @@ template "yaml.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/common/conf.d/yaml.ini" do
+link "/etc/php5/common/conf.d/20-yaml.ini" do
   action :create
   to "../../mods-available/yaml.ini"
 end

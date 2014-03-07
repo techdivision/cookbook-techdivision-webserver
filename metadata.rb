@@ -4,7 +4,7 @@ maintainer_email "r.lemke@techdivision.com"
 license          "MIT License"
 description      "Installs/Configures techdivision-webserver"
 long_description IO.read(File.join(File.dirname(__FILE__), "README.md"))
-version          "0.3.4"
+version          "0.3.6"
 
 depends "techdivision-base"
 depends "nginx"
