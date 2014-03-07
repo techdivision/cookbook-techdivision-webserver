@@ -157,13 +157,31 @@ end
 # PECL extensions
 #
 
+# PECL: igbinary
+
 execute "pecl install igbinary" do
   not_if "test -e `pecl config-get ext_dir`/igbinary.so"
 end
 
-#package "libyaml-dev" do
-#  action :install
-#end
+template "igbinary.ini" do
+  path "/etc/php5/mods-available/igbinary.ini"
+  source "igbinary.ini"
+  owner "root"
+  group "root"
+  mode "0644"
+  notifies :restart, resources(:service => "php-fpm")
+end
+
+link "/etc/php5/common/conf.d/20-igbinary.ini" do
+  action :create
+  to "../../mods-available/igbinary.ini"
+end
+
+# PECL: yaml
+
+package "libyaml-dev" do
+  action :install
+end
 
 execute "pecl install yaml" do
   not_if "test -e `pecl config-get ext_dir`/yaml.so"
