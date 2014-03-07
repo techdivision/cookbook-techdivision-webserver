@@ -110,7 +110,7 @@ end
 #
 
 template "100-general-additions.ini" do
-  path "/etc/php5/conf.d/common/100-general-additions.ini"
+  path "/etc/php5/common/conf.d/100-general-additions.ini"
   source "100-general-additions.ini"
   owner "root"
   group "root"
@@ -133,12 +133,17 @@ php_pear "yaml" do
 end
 
 template "yaml.ini" do
-  path "/etc/php5/common/conf.d/yaml.ini"
+  path "/etc/php5/mods-available/yaml.ini"
   source "yaml.ini"
   owner "root"
   group "root"
   mode "0644"
   notifies :restart, resources(:service => "php-fpm")
+end
+
+link "/etc/php5/common/conf.d/yaml.ini" do
+  action :create
+  to "../../mods-available/yaml.ini"
 end
 
 package "php5-gd" do
