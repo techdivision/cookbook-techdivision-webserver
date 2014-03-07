@@ -16,7 +16,7 @@
 # NGINX
 #
 
-include_recipe 'nginx'
+include_recipe "nginx"
 
 directory "/var/www/nginx-default" do
   action :create
@@ -53,7 +53,7 @@ nginx_site "default-custom" do
 end
 
 #
-# PHP configuration and additional modules:
+# PHP configuration directory structure
 #
 
 directory "/etc/php5/conf.d" do
@@ -62,6 +62,46 @@ directory "/etc/php5/conf.d" do
   group "www-data"
   mode 00755
 end
+
+directory "/etc/php5/fpm" do
+  action :create
+  owner "root"
+  group "www-data"
+  mode 00755
+end
+
+directory "/etc/php5/cli" do
+  action :create
+  owner "root"
+  group "www-data"
+  mode 00755
+end
+
+directory "/etc/php5/fpm/conf.d" do
+  action :delete
+  recursive true
+  only_if { File.directory?("/etc/php5/fpm/conf.d") && !File.symlink?("/etc/php5/fpm/conf.d")}
+end
+
+link "/etc/php5/fpm/conf.d" do
+  action :create
+  to "../conf.d"
+end
+
+directory "/etc/php5/cli/conf.d" do
+  action :delete
+  recursive true
+  only_if { File.directory?("/etc/php5/cli/conf.d") && !File.symlink?("/etc/php5/cli/conf.d")}
+end
+
+link "/etc/php5/cli/conf.d" do
+  action :create
+  to "../conf.d"
+end
+
+#
+# PHP configuration and additional modules:
+#
 
 template "100-general-additions.ini" do
   path "/etc/php5/conf.d/100-general-additions.ini"
@@ -72,17 +112,12 @@ template "100-general-additions.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-#link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
-#  to "/etc/php5/conf.d/100-general-additions.ini"
-#end
-
-#link "/etc/php5/cli/conf.d/100-general-additions.ini" do
-#  to "/etc/php5/conf.d/100-general-additions.ini"
-#end
-
-# FIXME: igbinary is installed, but not included in the active extensions yet (doesn't appear in php -i)!
 php_pear "igbinary" do
   channel "pecl.php.net"
+  action :install
+end
+
+package "libyaml-dev" do
   action :install
 end
 
@@ -91,23 +126,46 @@ php_pear "yaml" do
   action :install
 end
 
-package 'php5-gd' do
+template "yaml.ini" do
+  path "/etc/php5/conf.d/yaml.ini"
+  source "yaml.ini"
+  owner "root"
+  group "root"
+  mode "0644"
+  notifies :restart, resources(:service => "php-fpm")
+end
+
+package "php5-gd" do
   action :install
 end
 
-package 'php5-mysqlnd' do
+package "php5-mysqlnd" do
   action :install
 end
 
-package 'php5-sqlite' do
+package "php5-sqlite" do
   action :install
 end
 
-package 'php5-readline' do
+# Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
+link "20-pdo_sqlite.ini" do
+  path "20-pdo_sqlite.ini"
+  to "../mods-available/pdo_sqlite.ini"
+  action :create
+end
+
+# Workaround: PHP 5.5 from dotdeb seems to create a wrong symlink pointing to "../../mods-available"!
+link "20-sqlite3.ini" do
+  path "20-sqlite3.ini"
+  to "../mods-available/20-sqlite3.ini"
+  action :create
+end
+
+package "php5-readline" do
   action :install
 end
 
-package 'php5-curl' do
+package "php5-curl" do
   action :install
 end
 
@@ -115,7 +173,7 @@ end
 # RSYNC for Surf deployments
 #
 
-package 'rsync' do
+package "rsync" do
   action :install
 end
 
