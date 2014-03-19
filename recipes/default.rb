@@ -56,17 +56,11 @@ end
 # PHP configuration directory structure
 #
 
-#
-# Create a directory "common" instead of using just "/etc/php5/conf.d" because all modules which are installed
-# by DPKG will create symlinks to their module init files with "../../mods-available". That's because they expect
-# to be in, for example, /etc/php5/cli/conf.d/ and not in /etc/php5/conf.d
-#
-directory "/etc/php5/common/conf.d" do
+directory "/etc/php5/conf.d" do
   action :create
   owner "root"
   group "www-data"
   mode 00755
-  recursive true
 end
 
 directory "/etc/php5/fpm" do
@@ -74,6 +68,7 @@ directory "/etc/php5/fpm" do
   owner "root"
   group "www-data"
   mode 00755
+  recursive true
 end
 
 directory "/etc/php5/cli" do
@@ -81,6 +76,7 @@ directory "/etc/php5/cli" do
   owner "root"
   group "www-data"
   mode 00755
+  recursive true
 end
 
 directory "/etc/php5/fpm/conf.d" do
@@ -91,7 +87,7 @@ end
 
 link "/etc/php5/fpm/conf.d" do
   action :create
-  to "../common/conf.d"
+  to "../conf.d"
 end
 
 directory "/etc/php5/cli/conf.d" do
@@ -102,30 +98,15 @@ end
 
 link "/etc/php5/cli/conf.d" do
   action :create
-  to "../common/conf.d"
+  to "../conf.d"
 end
-
-#
-# Re-create symlinks which usually would be created in ...fpm/conf.d and ...cli/conf.d
-#
-
-link "/etc/php5/common/conf.d/opcache.ini" do
-  action :create
-  to "../../mods-available/opcache.ini"
-end
-
-link "/etc/php5/common/conf.d/pdo.ini" do
-  action :create
-  to "../../mods-available/pdo.ini"
-end
-
 
 #
 # PHP configuration and additional modules:
 #
 
 template "100-general-additions.ini" do
-  path "/etc/php5/common/conf.d/100-general-additions.ini"
+  path "/etc/php5/conf.d/100-general-additions.ini"
   source "100-general-additions.ini"
   owner "root"
   group "root"
@@ -172,9 +153,9 @@ template "igbinary.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/common/conf.d/20-igbinary.ini" do
+link "/etc/php5/conf.d/20-igbinary.ini" do
   action :create
-  to "../../mods-available/igbinary.ini"
+  to "../mods-available/igbinary.ini"
 end
 
 # PECL: yaml
@@ -196,9 +177,9 @@ template "yaml.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/common/conf.d/20-yaml.ini" do
+link "/etc/php5/conf.d/20-yaml.ini" do
   action :create
-  to "../../mods-available/yaml.ini"
+  to "../mods-available/yaml.ini"
 end
 
 #
