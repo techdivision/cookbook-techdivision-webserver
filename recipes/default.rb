@@ -72,62 +72,42 @@ end
 # PHP configuration directory structure
 #
 
-directory "/etc/php5/conf.d" do
-  action :create
-  owner "root"
-  group "www-data"
-  mode 00755
-end
+#directory "/etc/php5/fpm" do
+#  action :create
+#  owner "root"
+#  group "www-data"
+#  mode 00755
+#  recursive true
+#end
 
-directory "/etc/php5/fpm" do
-  action :create
-  owner "root"
-  group "www-data"
-  mode 00755
-  recursive true
-end
-
-directory "/etc/php5/cli" do
-  action :create
-  owner "root"
-  group "www-data"
-  mode 00755
-  recursive true
-end
-
-directory "/etc/php5/fpm/conf.d" do
-  action :delete
-  recursive true
-  only_if { File.directory?("/etc/php5/fpm/conf.d") && !File.symlink?("/etc/php5/fpm/conf.d")}
-end
-
-link "/etc/php5/fpm/conf.d" do
-  action :create
-  to "../conf.d"
-end
-
-directory "/etc/php5/cli/conf.d" do
-  action :delete
-  recursive true
-  only_if { File.directory?("/etc/php5/cli/conf.d") && !File.symlink?("/etc/php5/cli/conf.d")}
-end
-
-link "/etc/php5/cli/conf.d" do
-  action :create
-  to "../conf.d"
-end
+#directory "/etc/php5/cli" do
+#  action :create
+#  owner "root"
+#  group "www-data"
+#  mode 00755
+#  recursive true
+#end
 
 #
 # PHP configuration and additional modules:
 #
 
 template "100-general-additions.ini" do
-  path "/etc/php5/conf.d/100-general-additions.ini"
+  path "/etc/php5/100-general-additions.ini"
   source "100-general-additions.ini"
   owner "root"
   group "root"
   mode "0644"
-  notifies :restart, resources(:service => "php-fpm")
+end
+
+link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
+  action :create
+  to "../../100-general-additions.ini"
+end
+
+link "/etc/php5/cli/conf.d/100-general-additions.ini" do
+  action :create
+  to "../../100-general-additions.ini"
 end
 
 package "php5-gd" do
@@ -169,9 +149,14 @@ template "igbinary.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/conf.d/20-igbinary.ini" do
+link "/etc/php5/fpm/conf.d/20-igbinary.ini" do
   action :create
-  to "../mods-available/igbinary.ini"
+  to "../../mods-available/igbinary.ini"
+end
+
+link "/etc/php5/cli/conf.d/20-igbinary.ini" do
+  action :create
+  to "../../mods-available/igbinary.ini"
 end
 
 # PECL: yaml
@@ -193,9 +178,14 @@ template "yaml.ini" do
   notifies :restart, resources(:service => "php-fpm")
 end
 
-link "/etc/php5/conf.d/20-yaml.ini" do
+link "/etc/php5/fpm/conf.d/20-yaml.ini" do
   action :create
-  to "../mods-available/yaml.ini"
+  to "../../mods-available/yaml.ini"
+end
+
+link "/etc/php5/cli/conf.d/20-yaml.ini" do
+  action :create
+  to "../../mods-available/yaml.ini"
 end
 
 #
