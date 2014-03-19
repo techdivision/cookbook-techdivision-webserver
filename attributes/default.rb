@@ -1,4 +1,4 @@
-default['php-fpm']['pools'] = [
+default["php-fpm"]["pools"] = [
   {
     :name => "www",
     :listen => "127.0.0.1:9000",

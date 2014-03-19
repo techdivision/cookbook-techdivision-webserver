@@ -34,6 +34,22 @@ file "/var/www/nginx-default/index.php" do
 end
 
 #
+# PHP 5.5 via DotDeb
+#
+case node['platform']
+when 'debian'
+  if node.platform_version.to_f >= 7.0
+    apt_repository "wheezy-php55" do
+      uri "http://packages.dotdeb.org"
+      distribution "wheezy-php55"
+      components ['all']
+      key "http://www.dotdeb.org/dotdeb.gpg"
+      action :add
+    end
+  end
+end
+
+#
 # PHP-FPM:
 #
 
