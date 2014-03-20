@@ -199,6 +199,8 @@ end
 #
 # TYPO3 Neos websites
 #
+# TODO: Move this to a Neos cookbook (?)
+#
 
 sites = search(:sites, "host:#{node.fqdn} AND delete:false")
 
@@ -212,6 +214,19 @@ sites.each do |site|
 
   nginx_site site["host"] do
     enable true
+  end
+
+  #
+  # For Vagrant import the site if it hasn't been run already
+  #
+
+  if node["vagrant"] && site["sitePackageKey"] then
+    flow_development_context = "Development/" + site["host"].gsub(".", "").capitalize
+    execute "Running site:import for " + site["host"] do
+      cwd "/var/www/" + site["host"] + "/releases/vagrant"
+      command "sudo -u vagrant FLOW_CONTEXT=#{flow_development_context} ./flow site:import --package-key " + site["sitePackageKey"] + " && touch /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
+      not_if "test -e /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
+    end
   end
 
 end
