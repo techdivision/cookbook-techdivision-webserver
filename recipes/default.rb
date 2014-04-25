@@ -247,7 +247,7 @@ sites.each do |site|
       user "vagrant"
       umask 0002
       cwd "/var/www/" + site["host"] + "/releases/vagrant"
-      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create editor password Editor Vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:addrole editor TYPO3.Neos:Editor"
+      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create editor password Editor Vagrant"
       not_if "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:show editor"
     end
   end
