@@ -236,6 +236,20 @@ sites.each do |site|
       command "FLOW_CONTEXT=#{flow_development_context} ./flow site:import --package-key " + site["sitePackageKey"] + " && touch /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
       not_if "test -e /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
     end
+    execute "Creating Neos user 'admin' with password 'password' for " + site["host"] do
+      user "vagrant"
+      umask 0002
+      cwd "/var/www/" + site["host"] + "/releases/vagrant"
+      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create admin password Administrator Vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:addrole admin TYPO3.Neos:Administrator"
+      not_if "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:show admin"
+    end
+    execute "Creating Neos user 'editor' with password 'password' for " + site["host"] do
+      user "vagrant"
+      umask 0002
+      cwd "/var/www/" + site["host"] + "/releases/vagrant"
+      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create editor password Editor Vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:addrole editor TYPO3.Neos:Editor"
+      not_if "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:show editor"
+    end
   end
 
 end
