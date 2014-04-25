@@ -104,6 +104,7 @@ end
 template "100-general-additions.ini" do
   path "/etc/php5/100-general-additions.ini"
   source "100-general-additions.ini"
+  notifies :restart, resources(:service => "php-fpm")
 end
 
 link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
