@@ -13,23 +13,39 @@
 #
 
 #
+# Create a group "web" which is shared among Nginx, PHP, Vagrant and so on:
+#
+
+group "web" do
+  action :create
+  append true
+end
+
+#
 # NGINX
 #
 
 include_recipe "nginx"
 
-directory "/var/www/nginx-default" do
-  action :create
+group "web" do
+  action :modify
+  members "www-data"
+  append true
+end
+
+directory "/var/www" do
   owner "root"
-  group "www-data"
-  mode 00755
-  recursive true
+  group "web"
+  mode 02775
+end
+
+directory "/var/www/nginx-default" do
+  owner "root"
+  mode 00775
 end
 
 file "/var/www/nginx-default/index.php" do
   content "<?php echo(gethostname()); ?>"
-  owner "root"
-  group "www-data"
   mode 00775
 end
 
@@ -69,24 +85,17 @@ nginx_site "default-custom" do
 end
 
 #
-# PHP configuration directory structure
+# Tweak the PHP-FPM init.d script to run PHP-FPM with umask 002
 #
 
-#directory "/etc/php5/fpm" do
-#  action :create
-#  owner "root"
-#  group "www-data"
-#  mode 00755
-#  recursive true
-#end
-
-#directory "/etc/php5/cli" do
-#  action :create
-#  owner "root"
-#  group "www-data"
-#  mode 00755
-#  recursive true
-#end
+template "php5-fpm" do
+  path "/etc/init.d/php5-fpm"
+  source "php5-fpm"
+  owner "root"
+  group "root"
+  mode "0755"
+  notifies :restart, resources(:service => "php-fpm")
+end
 
 #
 # PHP configuration and additional modules:
@@ -95,9 +104,6 @@ end
 template "100-general-additions.ini" do
   path "/etc/php5/100-general-additions.ini"
   source "100-general-additions.ini"
-  owner "root"
-  group "root"
-  mode "0644"
 end
 
 link "/etc/php5/fpm/conf.d/100-general-additions.ini" do
@@ -223,8 +229,10 @@ sites.each do |site|
   if node["vagrant"] && site["sitePackageKey"] then
     flow_development_context = "Development/" + site["host"].gsub(".", "").capitalize
     execute "Running site:import for " + site["host"] do
+      user "vagrant"
+      umask 0002
       cwd "/var/www/" + site["host"] + "/releases/vagrant"
-      command "sudo -u vagrant FLOW_CONTEXT=#{flow_development_context} ./flow site:import --package-key " + site["sitePackageKey"] + " && touch /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
+      command "FLOW_CONTEXT=#{flow_development_context} ./flow site:import --package-key " + site["sitePackageKey"] + " && touch /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
       not_if "test -e /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
     end
   end
