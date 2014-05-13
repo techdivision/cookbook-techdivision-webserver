@@ -216,6 +216,7 @@ sites.each do |site|
     database_name site["databaseName"]
     database_username site["databaseUsername"]
     database_password site["databasePassword"]
+    base_uri "http://#{site['host']}/"
     rewrite_rules []
   end
 
