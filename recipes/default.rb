@@ -230,6 +230,7 @@ sites.each do |site|
 
   if node["vagrant"] && site["sitePackageKey"] then
     flow_development_context = "Development/" + site["host"].gsub(".", "").capitalize
+
     execute "Running site:import for " + site["host"] do
       user "vagrant"
       umask 0002
@@ -237,18 +238,20 @@ sites.each do |site|
       command "FLOW_CONTEXT=#{flow_development_context} ./flow site:import --package-key " + site["sitePackageKey"] + " && touch /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
       not_if "test -e /var/www/" + site["host"] + "/shared/Configuration/#{flow_development_context}/dont_run_site_import"
     end
+
+    # Not using "cwd" attribute for the following two commands because it caused "file not found" errors
+    # for some reason (see: TechDivision CHEF-31)
     execute "Creating Neos user 'admin' with password 'password' for " + site["host"] do
       user "vagrant"
       umask 0002
-      cwd "/var/www/" + site["host"] + "/releases/vagrant"
-      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create admin password Administrator Vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:addrole admin TYPO3.Neos:Administrator"
+      command "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:create admin password Administrator Vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:addrole admin TYPO3.Neos:Administrator"
       not_if "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:show admin"
     end
+
     execute "Creating Neos user 'editor' with password 'password' for " + site["host"] do
       user "vagrant"
       umask 0002
-      cwd "/var/www/" + site["host"] + "/releases/vagrant"
-      command "FLOW_CONTEXT=#{flow_development_context} ./flow user:create editor password Editor Vagrant"
+      command "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:create editor password Editor Vagrant"
       not_if "cd /var/www/" + site["host"] + "/releases/vagrant && FLOW_CONTEXT=#{flow_development_context} ./flow user:show editor"
     end
   end
