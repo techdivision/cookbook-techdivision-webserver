@@ -212,11 +212,18 @@ end
 sites = search(:sites, "host:#{node.fqdn} AND delete:false")
 
 sites.each do |site|
+
   techdivision_typo3flow_app site["host"] do
     database_name site["databaseName"]
     database_username site["databaseUsername"]
     database_password site["databasePassword"]
-    base_uri "http://#{site['host']}/"
+    base_uri_production "http://#{site['host']}/"
+    if node["vagrant"]
+      base_uri_development "http://#{site['host']}dev/"
+    end
+    if site["behat"]
+      behat site["behat"]
+    end
     rewrite_rules []
   end
 
@@ -231,7 +238,7 @@ sites.each do |site|
   if node["vagrant"] && site["sitePackageKey"] then
     flow_development_context = "Development/" + site["host"].gsub(".", "").capitalize
 
-    execute "Running site:import for " + site["host"] do
+    execute "Running site:import for " + site["host"] + "(" + site["sitePackageKey"] + ")" do
       user "vagrant"
       umask 0002
       cwd "/var/www/" + site["host"] + "/releases/vagrant"
