@@ -137,6 +137,10 @@ package "php5-curl" do
   action :install
 end
 
+package "php5-xdebug" do
+  action :install
+end
+
 #
 # PECL extensions
 #
