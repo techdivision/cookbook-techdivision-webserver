@@ -25,6 +25,24 @@ end
 # NGINX
 #
 
+nginxHttpRedisPathAndFilename = "#{Chef::Config['file_cache_path']}/ngx_http_redis-0.3.7.tar.gz"
+nginxHttpRedisExtractPath = "#{Chef::Config['file_cache_path']}/ngx_http_redis-0.3.7"
+
+remote_file nginxHttpRedisPathAndFilename do
+  source "http://people.freebsd.org/~osa/ngx_http_redis-0.3.7.tar.gz"
+  checksum "9dfc14db81f431fdf3d69f3661a37daf110aef5f9479aa7c88cf362bb5d62604"
+end
+
+bash 'extractHttpRedisModule' do
+  cwd ::File.dirname(nginxHttpRedisPathAndFilename)
+  code <<-EOH
+    mkdir -p #{nginxHttpRedisExtractPath}
+    tar xzf #{nginxHttpRedisPathAndFilename} -C #{nginxHttpRedisExtractPath}
+    mv #{nginxHttpRedisExtractPath}/*/* #{nginxHttpRedisExtractPath}/
+    EOH
+  not_if { ::File.exists?(nginxHttpRedisExtractPath) }
+end
+
 include_recipe "nginx"
 
 group "web" do
@@ -227,6 +245,9 @@ sites.each do |site|
     end
     if site["behat"]
       behat site["behat"]
+    end
+    if site["redisProxy"]
+      redis_proxy site["redisProxy"]
     end
     rewrite_rules []
   end
